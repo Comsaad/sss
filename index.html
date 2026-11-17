@@ -429,4 +429,662 @@
                 <div class="sub-tabs">
                     <button class="sub-tab-btn active" id="tabBtnvideos" onclick="switchSubTab('videos', event)">🎥 فيديوهات عين الإثرائية</button>
                     <button class="sub-tab-btn" id="tabBtnactivities" onclick="switchSubTab('activities', event)">💡 الأنشطة والتمارين التفاعلية</button>
-                    <button class="sub-tab-btn" id="tabBtnflashcards" onclick="switchSubTab('flashcards
+                    <button class="sub-tab-btn" id="tabBtnflashcards" onclick="switchSubTab('flashcards', event)">🧠 بطاقات المراجعة السريعة</button>
+                </div>
+
+                <div id="subTabvideos">
+                    <div class="section-header-title">
+                        <span>🎬</span> <span>شاهدي الفيديو وتأملي المعلومات:</span>
+                    </div>
+                    <div class="grid-cards" id="videosGrid"></div>
+                </div>
+
+                <div id="subTabactivities" class="hidden">
+                    <div class="section-header-title">
+                        <span>💡</span> <span>الأنشطة والتمارين التفاعلية (محاولة واحدة لكل سؤال):</span>
+                    </div>
+                    <div id="activitiesContainer"></div>
+                </div>
+
+                <div id="subTabflashcards" class="hidden">
+                    <div class="section-header-title">
+                        <span>🧠</span> <span>بطاقات المراجعة والتأمل السريع:</span>
+                    </div>
+                    <div id="flashcardsContainer"></div>
+                </div>
+            </div>
+
+            <div class="leaderboard-box">
+                <h3 style="margin-top:0; color:#047857;">🏆 لوحة صدارة الطالبات المشاركات</h3>
+                <p style="font-size: 0.9rem; color:#065f46; margin-bottom: 10px;">حلّي الأنشطة والتمارين ليرتقي اسمك في الصدارة!</p>
+                <ul class="leaderboard-list" id="leaderboardList">
+                    <li style="justify-content: center; color: #64748b;">لا توجد مشاركات حتى الآن. كوني أول المشاركات! 🌟</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="teacherLoginModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="color: #d97706; margin-top:0;">🔐 دخول لوحة متابعة المعلمة</h3>
+            <p>هذه اللوحة خاصة بمعلمة المادة (منيرة السعيدان). الرجاء إدخال الرمز السري المعتمد:</p>
+            <input type="password" id="teacherPinInput" placeholder="أدخلي الرمز السري..." maxlength="8" onkeydown="if(event.key === 'Enter') verifyTeacherPin()">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                <button class="btn btn-teacher" onclick="verifyTeacherPin()">تحقق ودخول</button>
+                <button class="btn btn-danger" onclick="closeTeacherLogin()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="teacherDashboardModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 750px; text-align: right;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="color: #4338ca; margin:0;">📊 لوحة متابعة الطالبات (المعلمة: منيرة السعيدان)</h3>
+                <button class="btn btn-danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="closeTeacherDashboard()">إغلاق</button>
+            </div>
+            
+            <div class="stats-badge-grid">
+                <div class="stat-card">
+                    <div class="stat-card-val" id="statCount">0</div>
+                    <div class="stat-card-lbl">عدد المشاركات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-val" id="statMaxPoints">0</div>
+                    <div class="stat-card-lbl">أعلى رصيد نقاط</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-val" id="statAvgProgress">0%</div>
+                    <div class="stat-card-lbl">متوسط التقدم</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <input type="text" id="teacherSearchInput" placeholder="🔍 ابحثي باسم الطالبة..." style="margin:0;" oninput="filterTeacherTable()">
+                <button class="btn btn-success" style="white-space: nowrap;" onclick="exportToCSV()">📥 تصدير Excel/CSV</button>
+            </div>
+
+            <div style="max-height: 280px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: right;">
+                    <thead>
+                        <tr style="background: #e0f2fe; color: #0369a1;">
+                            <th style="padding: 10px; border-bottom: 1px solid #cbd5e1;">اسم الطالبة</th>
+                            <th style="padding: 10px; border-bottom: 1px solid #cbd5e1; text-align:center;">النقاط</th>
+                            <th style="padding: 10px; border-bottom: 1px solid #cbd5e1; text-align:center;">التقدم</th>
+                            <th style="padding: 10px; border-bottom: 1px solid #cbd5e1; text-align:center;">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherStudentsTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 15px; text-align: center; display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-danger" style="font-size: 0.85rem; padding: 6px 14px;" onclick="resetStudentData()">🗑️ إعادة ضبط سجل البيانات</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="certificateModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="certificate">
+                <span style="font-size: 2.2rem;">🌟 🏆 🌟</span>
+                <h2>المتوسطة التاسعة والثانية تحفيظ القرآن الكريم بالدلم</h2>
+                <h3>شهادة شكر وتقدير وتهنئة بالتفوق الرقمي</h3>
+                <p style="font-size: 1.1rem; margin: 15px 0;">تتقدم إدارة المدرسة ومعلمة المهارات الرقمية بخالص التهنئة للطالبة:</p>
+                <p style="font-size: 1.5rem; font-weight: bold; color: #1e40af;" id="certStudentName"></p>
+                <p style="font-size: 1.05rem; line-height: 1.6;">وذلك نظير تميزها وتألقها وإتمامها أنشطة منهج المهارات الرقمية للصف الأول المتوسط بنجاح وتفوق وإحرازها <span id="certPoints" style="color:#d97706; font-weight:bold;"></span> نقطة.</p>
+                <div style="margin-top: 35px; display: flex; justify-content: space-between; font-weight: bold; color: #475569; padding: 0 15px;">
+                    <div>مديرة المدرسة: مي المسعد</div>
+                    <div>معلمة المادة: منيرة السعيدان</div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-success" onclick="window.print()">🖨️ طباعة الشهادة</button>
+                <button class="btn btn-danger" onclick="closeCertificateModal()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        جميع الحقوق محفوظة © المتوسطة التاسعة والثانية تحفيظ القرآن الكريم بالدلم | إعداد وتصميم المعلمة: منيرة السعيدان
+    </footer>
+
+    <script>
+        const TEACHER_SECRET_PIN = "1446";
+
+        const encouragementPhrases = [
+            "✨ تعلمك اليوم يصنع إبداعك غدًا 🌟",
+            "📚 بالمهارات الرقمية نرتقي قمم النجاح ✨",
+            "💡 الفكرة الذكية بداية كل اختراع عظيم 🚀",
+            "🚀 واصلي المسير، أنتِ نجمة المستقبل 🌟",
+            "🏆 بالجد والاجتهاد تحلو ثمار التفوق 🎓"
+        ];
+
+        let phraseIndex = 0;
+        setInterval(() => {
+            phraseIndex = (phraseIndex + 1) % encouragementPhrases.length;
+            const banner = document.getElementById("encouragementBanner");
+            if(banner) {
+                banner.style.opacity = '0';
+                setTimeout(() => {
+                    banner.innerText = encouragementPhrases[phraseIndex];
+                    banner.style.opacity = '1';
+                }, 300);
+            }
+        }, 5000);
+
+        const platformData = {
+            1: {
+                title: "الوحدة الأولى: تعلم الأساسيات",
+                videos: [
+                    { title: "الدرس الأول: أجهزة الحاسب ومكوناتها", url: "https://www.youtube.com/embed/-WB71Vx1a-0" },
+                    { title: "الدرس الثاني: نظام التشغيل وتخصيص الواجهة", url: "https://www.youtube.com/embed/zSbF2Ogg61Q" },
+                    { title: "الدرس الثالث: إعدادات النظام وتنظيم الملفات", url: "https://www.youtube.com/embed/FJ0ME4KF8bY" }
+                ],
+                activities: [
+                    { type: "mcq", question: "أي مما يلي يُعد بمثابة العقل بالنسبة لجهاز الحاسب ويقوم بتنفيذ العمليات الحسابية والمنطقية؟", options: ["اللوحة الأم (Motherboard)", "وحدة المعالجة المركزية (CPU)", "ذاكرة الوصول العشوائي (RAM)", "القرص الصلب"], correct: 1, points: 10 },
+                    { type: "truefalse", question: "نظام التشغيل هو البرنامج المسؤول عن التحكم بجهاز الحاسب وإدارة موارده وتوفير واجهة للمستخدم.", correct: true, points: 10 },
+                    { type: "mcq", question: "ما هو المفتاح الذي نضغط عليه باستمرار أثناء سحب ملف بالماوس ليتم 'نسخه' بدلاً من 'نقله'؟", options: ["Shift", "Alt", "Ctrl", "Tab"], correct: 2, points: 10 }
+                ],
+                flashcards: [
+                    { q: "ما هي مهام وحدة المعالجة المركزية (CPU)؟", a: "بمثابة العقل للحاسب؛ تقوم بتنفيذ العمليات الحسابية والمنطقية وعمليات الإدخال والإخراج." },
+                    { q: "ما الفرق بين القرص الصلب وذاكرة RAM؟", a: "القرص الصلب يحفظ البيانات بشكل دائم، بينما RAM ذاكرة مؤقتة تفقد البيانات عند إيقاف التشغيل." }
+                ]
+            },
+            2: {
+                title: "الوحدة الثانية: معالجة النصوص المتقدمة",
+                videos: [
+                    { title: "الدرس الأول: التنسيق المتقدم للفقرات والصفحات", url: "https://www.youtube.com/embed/M_u0Uk03JgY" },
+                    { title: "الدرس الثاني: دمج المراسلات وإنشاء الخطابات", url: "https://www.youtube.com/embed/YFg6yuoanh8" },
+                    { title: "الدرس الثالث: إتمام عملية الدمج وطباعة المغلفات", url: "https://www.youtube.com/embed/KccBPbOW4AE" }
+                ],
+                activities: [
+                    { type: "mcq", question: "ما اسم ميزة مايكروسوفت وورد التي تتيح إرسال نموذج مستند واحد لعدة أشخاص بأسمائهم وبياناتهم المختلفة؟", options: ["التنسيق التلقائي", "دمج المراسلات (Mail Merge)", "التدقيق اللغوي", "الجداول المتقدمة"], correct: 1, points: 10 },
+                    { type: "truefalse", question: "تُستخدم ميزة 'دمج المراسلات' لدمج مستند نصي مع ملف قاعدة بيانات أو جدول إكسل.", correct: true, points: 10 }
+                ],
+                flashcards: [
+                    { q: "ما هي خطوات دمج المراسلات؟", a: "تحديد المستند الرئيس، اختيار قائمة المستلمين، إدراج حقول الدمج، ومعاينة وإتمام عملية الدمج." }
+                ]
+            },
+            3: {
+                title: "الوحدة الثالثة: التنسيق المتقدم والدوال",
+                videos: [
+                    { title: "الدرس الأول: التنسيق المتقدم والدوال في إكسل", url: "https://www.youtube.com/embed/1d4aM-Ft1pU" }
+                ],
+                activities: [
+                    { type: "mcq", question: "ما هي الدالة المستخدمة في إكسل لحساب عدد الخلايا التي تحتوي على أرقام؟", options: ["SUM", "COUNT", "TODAY", "LEN"], correct: 1, points: 10 },
+                    { type: "truefalse", question: "الدالة TODAY في إكسل تعرض التاريخ الحالي التلقائي على الشاشة.", correct: true, points: 10 }
+                ],
+                flashcards: [
+                    { q: "ما وظيفة الدالة CONCAT؟", a: "تُستخدم لدمج النصوص من عدة خلايا مختلفة في خلية واحدة." }
+                ]
+            },
+            4: {
+                title: "الوحدة الرابعة: البرمجة مع بايثون",
+                videos: [
+                    { title: "مقدمة في أساسيات البرمجة ولغة بايثون", url: "https://www.youtube.com/embed/-WB71Vx1a-0" }
+                ],
+                activities: [
+                    { type: "mcq", question: "في المخططات الانسيابية (Flowcharts), أي شكل هندسي يُستخدم لتمثيل 'البداية والنهاية'؟", options: ["المستطيل", "المعين", "الشكل البيضاوي", "متوازي الأضلاع"], correct: 2, points: 10 },
+                    { type: "truefalse", question: "دالة الطباعة في لغة بايثون والتي تستخدم لعرض الأوامر والنصوص هي print().", correct: true, points: 10 }
+                ],
+                flashcards: [
+                    { q: "ما هي الخوارزمية؟", a: "سلسلة من الخطوات المنطقية والمتسلسلة المحددة لحل مشكلة معينة." }
+                ]
+            }
+        };
+
+        let studentName = "";
+        let points = 0;
+        let currentUnit = 1;
+        let completedUnits = { 1: false, 2: false, 3: false, 4: false };
+        let answeredQuestions = {}; 
+
+        window.onload = function() {
+            updateLeaderboard();
+        };
+
+        function startPlatform() {
+            const inputVal = document.getElementById("studentNameInput").value.trim();
+            if(!inputVal) {
+                alert("الرجاء إدخال اسمك الثلاثي الكريم أولاً!");
+                return;
+            }
+            studentName = inputVal;
+            document.getElementById("displayName").innerText = studentName;
+            
+            // جلب أحدث البيانات أو تسجيل الطالبة الجديدة فوراً في LocalStorage
+            let studentsDatabase = JSON.parse(localStorage.getItem("studentsDatabase_no_dummy")) || {};
+            
+            if(!studentsDatabase[studentName]) {
+                studentsDatabase[studentName] = { 
+                    points: 0, 
+                    progress: 0, 
+                    completedUnits: { 1: false, 2: false, 3: false, 4: false }, 
+                    answeredQuestions: {} 
+                };
+            }
+            
+            const sData = studentsDatabase[studentName];
+            points = sData.points || 0;
+            completedUnits = sData.completedUnits || { 1: false, 2: false, 3: false, 4: false };
+            answeredQuestions = sData.answeredQuestions || {};
+
+            updatePointsDisplay();
+            updateProgressBar();
+            updateUnitLocks();
+            saveStudentDataToStorage(); // حفظ وسجل الدخول فوراً
+
+            document.getElementById("loginSection").classList.add("hidden");
+            document.getElementById("mainPlatform").classList.remove("hidden");
+            loadUnitContent(1);
+        }
+
+        function logoutStudent() {
+            saveStudentDataToStorage();
+            studentName = "";
+            points = 0;
+            answeredQuestions = {};
+            document.getElementById("studentNameInput").value = "";
+            document.getElementById("mainPlatform").classList.add("hidden");
+            document.getElementById("loginSection").classList.remove("hidden");
+            updateLeaderboard();
+        }
+
+        function selectUnit(unitNum) {
+            if (unitNum > 1 && !completedUnits[unitNum - 1] && points < (unitNum - 1) * 20) {
+                alert("عذراً، يجب إتمام الأنشطة وإحراز النقاط المطلوبة في الوحدة السابقة لفتح هذه الوحدة.");
+                return;
+            }
+            currentUnit = unitNum;
+            document.querySelectorAll('.unit-card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`unitBtn${unitNum}`).classList.add('active');
+            loadUnitContent(unitNum);
+        }
+
+        function updateUnitLocks() {
+            for (let i = 2; i <= 4; i++) {
+                const btn = document.getElementById(`unitBtn${i}`);
+                if (!btn) continue;
+                if (completedUnits[i - 1] || points >= (i - 1) * 20) {
+                    completedUnits[i - 1] = true;
+                    btn.classList.remove('locked');
+                    if(btn.innerText.includes("🔒")) {
+                        btn.innerText = btn.innerText.replace(" 🔒", "");
+                    }
+                } else {
+                    btn.classList.add('locked');
+                    if(!btn.innerText.includes("🔒")) {
+                        btn.innerText += " 🔒";
+                    }
+                }
+            }
+        }
+
+        function switchSubTab(tabName, event) {
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                const btn = document.getElementById(`tabBtn${tabName}`);
+                if(btn) btn.classList.add('active');
+            }
+
+            document.getElementById("subTabvideos").classList.add("hidden");
+            document.getElementById("subTabactivities").classList.add("hidden");
+            document.getElementById("subTabflashcards").classList.add("hidden");
+
+            const targetTab = document.getElementById(`subTab${tabName}`);
+            if(targetTab) {
+                targetTab.classList.remove("hidden");
+            }
+        }
+
+        function loadUnitContent(unitNum) {
+            const unit = platformData[unitNum];
+            if(!unit) return;
+            
+            document.getElementById("unitTitle").innerText = unit.title;
+            switchSubTab('videos', null);
+
+            // الفيديوهات
+            const videosGrid = document.getElementById("videosGrid");
+            videosGrid.innerHTML = "";
+            unit.videos.forEach(v => {
+                videosGrid.innerHTML += `
+                    <div class="item-card">
+                        <div class="video-container">
+                            <iframe src="${v.url}" allowfullscreen></iframe>
+                        </div>
+                        <h4 style="margin: 5px 0 0 0; font-size: 1rem; color:#1e293b;">${v.title}</h4>
+                    </div>
+                `;
+            });
+
+            // الأنشطة (مع دعم منع تكرار المحاولة وحفظ حالة السؤال)
+            const activitiesContainer = document.getElementById("activitiesContainer");
+            activitiesContainer.innerHTML = "";
+            unit.activities.forEach((act, index) => {
+                const qKey = `u${unitNum}_q${index}`;
+                const isAnswered = answeredQuestions[qKey] === true;
+                
+                let html = `<div class="question-box" id="box_${qKey}">`;
+                html += `<p style="font-weight:bold; margin-top:0;">السؤال ${index+1}: ${act.question}</p>`;
+
+                if (act.type === "mcq") {
+                    act.options.forEach((opt, oIndex) => {
+                        const checkedState = isAnswered && answeredQuestions[`${qKey}_sel`] === oIndex ? 'checked' : '';
+                        html += `
+                            <label style="display:block; margin: 8px 0; cursor:${isAnswered ? 'default' : 'pointer'};">
+                                <input type="radio" name="${qKey}" value="${oIndex}" ${isAnswered ? 'disabled' : ''} ${checkedState}> ${opt}
+                            </label>
+                        `;
+                    });
+                    html += `<button class="btn" id="btn_sub_${qKey}" style="padding: 6px 14px; font-size: 0.85rem; margin-top: 8px;" onclick="checkMCQ('${qKey}', ${unitNum}, ${index}, ${act.correct}, ${act.points})" ${isAnswered ? 'disabled' : ''}>تحقق من الإجابة</button>`;
+                } else if (act.type === "truefalse") {
+                    const checkTrue = isAnswered && answeredQuestions[`${qKey}_sel`] === true ? 'checked' : '';
+                    const checkFalse = isAnswered && answeredQuestions[`${qKey}_sel`] === false ? 'checked' : '';
+                    html += `
+                        <label style="margin-left: 20px; cursor:${isAnswered ? 'default' : 'pointer'};"><input type="radio" name="${qKey}" value="true" ${isAnswered ? 'disabled' : ''} ${checkTrue}> صح</label>
+                        <label style="cursor:${isAnswered ? 'default' : 'pointer'};"><input type="radio" name="${qKey}" value="false" ${isAnswered ? 'disabled' : ''} ${checkFalse}> خطأ</label>
+                        <br>
+                        <button class="btn" id="btn_sub_${qKey}" style="padding: 6px 14px; font-size: 0.85rem; margin-top: 10px;" onclick="checkTrueFalse('${qKey}', ${unitNum}, ${index}, ${act.correct}, ${act.points})" ${isAnswered ? 'disabled' : ''}>تحقق من الإجابة</button>
+                    `;
+                }
+
+                let feedbackHtml = "";
+                if (isAnswered) {
+                    const wasCorrect = answeredQuestions[`${qKey}_res`];
+                    if(wasCorrect) {
+                        feedbackHtml = `<span class="correct">إجابة صحيحة وموفقة! تم احتساب النقاط (+${act.points} نقاط) 🌟 (محاولة واحدة فقط)</span>`;
+                    } else {
+                        feedbackHtml = `<span class="incorrect">لقد أجريت المحاولة لهذا السؤال مسبقاً (إجابة غير دقيقة) 💡</span>`;
+                    }
+                }
+
+                html += `<div class="feedback" id="feedback_${qKey}">${feedbackHtml}</div>`;
+                html += `</div>`;
+                activitiesContainer.innerHTML += html;
+            });
+
+            // البطاقات السريعة
+            const flashcardsContainer = document.getElementById("flashcardsContainer");
+            flashcardsContainer.innerHTML = "";
+            unit.flashcards.forEach(fc => {
+                flashcardsContainer.innerHTML += `
+                    <div class="question-box" style="background: #eff6ff; border-color: #bfdbfe;">
+                        <p style="color: #1e40af; font-weight: bold; margin-top:0;">💡 ${fc.q}</p>
+                        <p style="color: #334155; margin-bottom: 0;"><strong>الإجابة والتأمل:</strong> ${fc.a}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function checkMCQ(qKey, unitNum, qIndex, correctOpt, actPoints) {
+            if(answeredQuestions[qKey]) return;
+
+            const radios = document.getElementsByName(qKey);
+            let selected = -1;
+            for(let i=0; i<radios.length; i++) {
+                if(radios[i].checked) { selected = i; break; }
+            }
+            if(selected === -1) {
+                alert("الرجاء اختيار إجابة أولاً!");
+                return;
+            }
+
+            const feedbackDiv = document.getElementById(`feedback_${qKey}`);
+            answeredQuestions[qKey] = true;
+            answeredQuestions[`${qKey}_sel`] = selected;
+
+            if(selected === correctOpt) {
+                feedbackDiv.innerHTML = `<span class="correct">إجابة صحيحة وموفقة! أحسنتِ (+${actPoints} نقاط) 🌟 (محاولة واحدة فقط)</span>`;
+                answeredQuestions[`${qKey}_res`] = true;
+                addPoints(actPoints);
+            } else {
+                feedbackDiv.innerHTML = `<span class="incorrect">إجابة غير دقيقة! انتهت محاولتك لهذا السؤال 💡</span>`;
+                answeredQuestions[`${qKey}_res`] = false;
+            }
+            
+            lockQuestion(qKey);
+            saveStudentDataToStorage();
+        }
+
+        function checkTrueFalse(qKey, unitNum, qIndex, correctVal, actPoints) {
+            if(answeredQuestions[qKey]) return;
+
+            const radios = document.getElementsByName(qKey);
+            let selectedVal = null;
+            for(let i=0; i<radios.length; i++) {
+                if(radios[i].checked) { selectedVal = (radios[i].value === "true"); break; }
+            }
+            if(selectedVal === null) {
+                alert("الرجاء اختيار 'صح' أو 'خطأ' أولاً!");
+                return;
+            }
+
+            const feedbackDiv = document.getElementById(`feedback_${qKey}`);
+            answeredQuestions[qKey] = true;
+            answeredQuestions[`${qKey}_sel`] = selectedVal;
+
+            if(selectedVal === correctVal) {
+                feedbackDiv.innerHTML = `<span class="correct">إجابة صحيحة وموفقة! أحسنتِ (+${actPoints} نقاط) 🌟 (محاولة واحدة فقط)</span>`;
+                answeredQuestions[`${qKey}_res`] = true;
+                addPoints(actPoints);
+            } else {
+                feedbackDiv.innerHTML = `<span class="incorrect">إجابة غير دقيقة! انتهت محاولتك لهذا السؤال 💡</span>`;
+                answeredQuestions[`${qKey}_res`] = false;
+            }
+            
+            lockQuestion(qKey);
+            saveStudentDataToStorage();
+        }
+
+        function lockQuestion(qKey) {
+            const radios = document.getElementsByName(qKey);
+            for(let i=0; i<radios.length; i++) radios[i].disabled = true;
+            const subBtn = document.getElementById(`btn_sub_${qKey}`);
+            if(subBtn) {
+                subBtn.disabled = true;
+                subBtn.innerText = "تمت الإجابة (محاولة واحدة)";
+            }
+        }
+
+        function addPoints(val) {
+            points += val;
+            updatePointsDisplay();
+            updateProgressBar();
+            updateUnitLocks();
+            checkCompletionAndTriggerConfetti();
+        }
+
+        function updatePointsDisplay() {
+            document.getElementById("totalPoints").innerText = points;
+        }
+
+        function updateProgressBar() {
+            let percent = Math.min(100, Math.round((points / 80) * 100));
+            const pText = document.getElementById("progressPercentText");
+            const pBar = document.getElementById("progressBarFill");
+            if(pText) pText.innerText = percent + "%";
+            if(pBar) pBar.style.width = percent + "%";
+
+            const certBtn = document.getElementById("certBtn");
+            if(certBtn) {
+                certBtn.disabled = percent < 100;
+            }
+        }
+
+        function checkCompletionAndTriggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function saveStudentDataToStorage() {
+            if(!studentName) return;
+            let studentsDatabase = JSON.parse(localStorage.getItem("studentsDatabase_no_dummy")) || {};
+            studentsDatabase[studentName] = {
+                points: points,
+                progress: Math.min(100, Math.round((points / 80) * 100)),
+                completedUnits: completedUnits,
+                answeredQuestions: answeredQuestions
+            };
+            localStorage.setItem("studentsDatabase_no_dummy", JSON.stringify(studentsDatabase));
+            updateLeaderboard();
+        }
+
+        function updateLeaderboard() {
+            let studentsDatabase = JSON.parse(localStorage.getItem("studentsDatabase_no_dummy")) || {};
+            const list = document.getElementById("leaderboardList");
+            if(!list) return;
+            const entries = Object.entries(studentsDatabase);
+            if(entries.length === 0) {
+                list.innerHTML = `<li style="justify-content: center; color: #64748b;">لا توجد مشاركات حتى الآن. كوني أول المشاركات! 🌟</li>`;
+                return;
+            }
+
+            entries.sort((a,b) => b[1].points - a[1].points);
+            list.innerHTML = "";
+            entries.forEach(([name, data], idx) => {
+                let medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : "⭐"));
+                list.innerHTML += `
+                    <li>
+                        <span>${medal} ${name}</span>
+                        <span style="color: #d97706;">${data.points} نقطة</span>
+                    </li>
+                `;
+            });
+        }
+
+        function openTeacherLogin() {
+            const pinInput = document.getElementById("teacherPinInput");
+            if(pinInput) {
+                pinInput.value = "";
+                document.getElementById("teacherLoginModal").classList.remove("hidden");
+                pinInput.focus();
+            }
+        }
+
+        function closeTeacherLogin() {
+            document.getElementById("teacherLoginModal").classList.add("hidden");
+        }
+
+        function verifyTeacherPin() {
+            const pinInput = document.getElementById("teacherPinInput");
+            if(!pinInput) return;
+            const pin = pinInput.value.trim();
+            if (pin === TEACHER_SECRET_PIN) {
+                closeTeacherLogin();
+                openTeacherDashboard();
+            } else {
+                alert("الرمز السري غير صحيح! الوصول مقتصر على معلمة المادة فقط.");
+                pinInput.value = "";
+                pinInput.focus();
+            }
+        }
+
+        function openTeacherDashboard() {
+            refreshTeacherTable();
+            document.getElementById("teacherDashboardModal").classList.remove("hidden");
+        }
+
+        function closeTeacherDashboard() {
+            document.getElementById("teacherDashboardModal").classList.add("hidden");
+        }
+
+        function refreshTeacherTable(filterText = "") {
+            const tbody = document.getElementById("teacherStudentsTableBody");
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            
+            // سحب البيانات المحدثة مباشرة من التخزين المحلي لكل طالبة
+            let studentsDatabase = JSON.parse(localStorage.getItem("studentsDatabase_no_dummy")) || {};
+            const entries = Object.entries(studentsDatabase);
+            
+            let totalStudents = entries.length;
+            let maxPts = 0;
+            let totalProgSum = 0;
+
+            if (totalStudents === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 15px; color:#64748b;">لا توجد سجلات طالبات مسجلات حتى الآن.</td></tr>`;
+                document.getElementById("statCount").innerText = 0;
+                document.getElementById("statMaxPoints").innerText = 0;
+                document.getElementById("statAvgProgress").innerText = "0%";
+                return;
+            }
+
+            let filtered = entries.filter(([name]) => name.includes(filterText));
+
+            filtered.forEach(([name, data]) => {
+                if(data.points > maxPts) maxPts = data.points;
+                totalProgSum += (data.progress || 0);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight:bold;">${name}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align:center; color:#d97706; font-weight:bold;">${data.points}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align:center;">${data.progress || 0}%</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align:center;">
+                            <span style="background: ${data.progress >= 100 ? '#dcfce7' : '#fef3c7'}; color: ${data.progress >= 100 ? '#166534' : '#b45309'}; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem;">
+                                ${data.progress >= 100 ? 'مكتملة 🏆' : 'نشطة 📚'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("statCount").innerText = totalStudents;
+            document.getElementById("statMaxPoints").innerText = maxPts;
+            document.getElementById("statAvgProgress").innerText = Math.round(totalProgSum / totalStudents) + "%";
+        }
+
+        function filterTeacherTable() {
+            const query = document.getElementById("teacherSearchInput").value.trim();
+            refreshTeacherTable(query);
+        }
+
+        function exportToCSV() {
+            let studentsDatabase = JSON.parse(localStorage.getItem("studentsDatabase_no_dummy")) || {};
+            let csvContent = "\uFEFFاسم الطالبة,النقاط,التقدم\n";
+            Object.entries(studentsDatabase).forEach(([name, data]) => {
+                csvContent += `"${name}",${data.points},"${data.progress || 0}%"\n`;
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "student_performance_report.csv";
+            a.click();
+        }
+
+        function resetStudentData() {
+            if(confirm("هل أنتِ متأكدة من رغبتك في حذف وإعادة ضبط سجل بيانات الطالبات بالكامل؟")) {
+                localStorage.removeItem("studentsDatabase_no_dummy");
+                refreshTeacherTable();
+                updateLeaderboard();
+                alert("تم إعادة ضبط السجل بنجاح.");
+            }
+        }
+
+        function showCertificateModal() {
+            document.getElementById("certStudentName").innerText = studentName;
+            document.getElementById("certPoints").innerText = points;
+            document.getElementById("certificateModal").classList.remove("hidden");
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+            }
+        }
+
+        function closeCertificateModal() {
+            document.getElementById("certificateModal").classList.add("hidden");
+        }
+    </script>
+</body>
+</html>
